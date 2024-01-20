@@ -45,11 +45,22 @@ class Item:
     @classmethod
     def instantiate_from_csv(cls):
         cls.all.clear()
+        try:
+             with open('../src/items.csv', newline='', encoding="cp1251") as csvfile:
+                 reader = csv.DictReader(csvfile)
 
-        with open('../src/items.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                cls(row['name'], row['price'], row['quantity'])
+                 if len(reader.fieldnames) < 3:
+                     raise InstantiateCSVError("Файл items.csv поврежден")
+
+                 for field in reader.fieldnames:
+                     if field not in ["name", "price", "quantity"]:
+                        raise InstantiateCSVError("Файл items.csv поврежден")
+
+                 for row in reader:
+                    cls(row['name'], row['price'], row['quantity'])
+
+        except FileNotFoundError:
+            raise FileNotFoundError("Отсутствует файл item.csv")
 
     @staticmethod
     def string_to_number(string):
@@ -65,3 +76,6 @@ class Item:
             self.__name = new_name
         else:
             print("Exception: Длина наименования товара превышает 10 символов")
+
+class InstantiateCSVError(Exception):
+    pass
